@@ -1,33 +1,40 @@
 require('dotenv').config();
 const express = require('express');
-const { graphqlHTTP } = require('express-graphql');
+const path = require('path');
 const { makeExecutableSchema } = require('@graphql-tools/schema');
 const { loadFilesSync } = require('@graphql-tools/load-files');
-const path = require('path');
+const { graphqlHTTP } = require('express-graphql');
+const databaseConnection = require('./model/database/db');
+
+const schemaArray = loadFilesSync(path.join(__dirname, '**/*.graphql'));
+const resolversArray = loadFilesSync(path.join(__dirname, '**/*.resolvers.js'));
+
+const schema = makeExecutableSchema({
+   typeDefs: schemaArray,
+   resolvers: resolversArray,
+});
 
 const port = process.env.PORT || 3000;
 const app = express();
 
-const typeDefsAr = loadFilesSync(path.join(__dirname, '**/*.graphql'));
-
-const schema = makeExecutableSchema({
-   typeDefs: typeDefsAr,
-});
-
-const root = {
-   products: require('./graphql/products/products.model'),
-   orders: require('./graphql/orders/orders.model'),
+const customlMiddleware = function (req, res, next) {
+   console.log('from(-- middleware');
+   next();
 };
 
-app.use(
-   '/graphql',
+app.use('/graphql', customlMiddleware, (req, res) => {
    graphqlHTTP({
-      schema,
-      rootValue: root,
+      schema: schema,
       graphiql: true,
-   })
-);
+   })(req, res);
+});
 
-app.listen(port, () => {
-   console.log(`server running on port ${port}...`);
+app.get('/', (req, res, next) => {
+   res.send(`<h1>Let's start our story with graphql...</h1>`);
+});
+
+databaseConnection(() => {
+   app.listen(port, () => {
+      console.log(`server running on port ${port}...`);
+   });
 });

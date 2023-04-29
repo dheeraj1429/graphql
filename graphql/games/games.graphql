@@ -1,0 +1,38 @@
+type Query {
+   getSingleGameInfo(gameId: ID!, userId: ID!): Game
+}
+
+type Mutation {
+   insertNewGame(name: String!, by: String!, description: String): Game
+}
+
+type Game {
+   _id: ID!
+   name: String
+   by: String
+   description: String
+   aboutGame: String
+   gameImage: String
+   url: String
+   urlMobile: String
+   previewImages: String
+   gameStatus: String
+   favoritesSize: String
+   likesSize: Int
+   gameBitcontroller: Boolean
+   gameProvider: Provider
+}
+
+type GameInFavorites {
+   userId: ID!
+}
+
+type GameInLike {
+   userId: ID!
+}
+
+type Provider {
+   _id: ID!
+   providerName: String
+   logo: String
+}
