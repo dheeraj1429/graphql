@@ -20,6 +20,15 @@ async function startApolloServer() {
 
    const server = new ApolloServer({
       schema,
+      formatError: (error) => {
+         if (error.extensions.code === 'NOT_FOUND' || 'INTERNAL_SERVER_ERROR') {
+            return {
+               message: error?.message,
+               type: error.extensions.code,
+            };
+         }
+         return error;
+      },
    });
 
    await server.start();

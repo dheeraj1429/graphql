@@ -1,5 +1,7 @@
 const gameModel = require('../model/schema/gameSchema');
-const { default: mongoose, models } = require('mongoose');
+const { default: mongoose } = require('mongoose');
+const { ApolloError } = require('apollo-server-express');
+const gameProviderModel = require('../model/schema/gameProvidersSchema');
 
 const getSingleGameInfo = async function (args) {
    const { gameId, userId } = args;
@@ -86,10 +88,29 @@ const getSingleGameInfo = async function (args) {
    if (info) {
       return info;
    } else {
-      throw new Error(`single game not found`);
+      throw new ApolloError('Single game is not found!', 'NOT_FOUND');
    }
+};
+
+const getAllGames = async function () {
+   const findAllGames = await gameModel
+      .find(
+         {
+            $and: [{ gameStatus: { $eq: 'Publish' } }],
+         },
+         { gameImage: 1, name: 1, by: 1 }
+      )
+      .populate('gameProvider', { providerName: 1, logo: 1 })
+      .limit(5);
+
+   if (findAllGames) {
+      return findAllGames;
+   }
+
+   throw new ApolloError('Internal server error', 'INTERNAL_SERVER_ERROR');
 };
 
 module.exports = {
    getSingleGameInfo,
+   getAllGames,
 };

@@ -1,5 +1,6 @@
 type Query {
    getSingleGameInfo(gameId: ID!, userId: ID!): Game
+   getAllGames: [Game]
 }
 
 type Mutation {
